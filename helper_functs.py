@@ -13,7 +13,7 @@ def is_valid(prev_face, prev_amount, next_face, next_amount):
 def get_largest_highest_face(dice):
 	amount = 0
 	face = 0
-	for i in range(5,-1,-1):
+	for i in range(5,0,-1):
 		if dice[i] > amount:
 			amount = dice[i]
 			face = i+1

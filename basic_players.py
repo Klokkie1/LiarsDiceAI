@@ -57,3 +57,31 @@ def ExpectedPlayer(dice_total, my_dice, round_log):
 	else: # if it is not a valid bid, just increment it
 		# i am not 100% sure if it is even possible to get here
 		return incrementer(dice_total, my_dice, round_log)
+	
+def ExpectedPlayer2(dice_total, my_dice, round_log):
+
+	n_my_dice = np.sum(my_dice)
+	dice_count_not_mine = dice_total - n_my_dice
+	out_expected = [round(dice_count_not_mine/3)]*6
+	expected = np.add(out_expected, my_dice)
+
+
+	if len(round_log["player"]) == 0: # it is going first
+		# get the largest amount of dice i have, and bit that plus expected
+		return get_largest_highest_face(expected)
+	
+	# have to deal with previous bids
+	prev_amount = round_log["amount"][-1]
+	prev_face = round_log["face"][-1]
+
+	if prev_amount > (expected[prev_face-1]):
+		# if the previous bid is higher than expected amounts, call
+		return 0, 0
+	
+	# if not calling, bid the highest expected amount
+	amount, face = get_largest_highest_face(expected)
+	if (is_valid(prev_face, prev_amount, face, amount)):
+		return amount, face
+	else: # if it is not a valid bid, just increment it
+		# i am not 100% sure if it is even possible to get here
+		return incrementer(dice_total, my_dice, round_log)
