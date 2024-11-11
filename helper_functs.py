@@ -1,3 +1,5 @@
+import numpy as np
+
 def is_valid(prev_face, prev_amount, next_face, next_amount):
 	if next_face not in [2,3,4,5,6]:
 		return False
@@ -18,3 +20,8 @@ def get_largest_highest_face(dice):
 			amount = dice[i]
 			face = i+1
 	return amount, face
+
+def effective_dice(dice):
+	for i in range(1, 6):
+		dice[i] += dice[0]
+	return dice[:]

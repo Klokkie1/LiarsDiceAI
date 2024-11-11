@@ -1,14 +1,28 @@
 import numpy as np
+from scipy.stats import nbinom, binom
 
 from helper_functs import *
 
-def printer(dice_total, my_dice, round_log):
-	print("dice_total:", dice_total, flush=True)
-	print("my_dice:", my_dice, flush=True)
-	print("round_log:", round_log, flush=True)
-	return (0, 0)
+def printer(dice_total, my_dice, round_log, *args, **kwargs):
+	"""
+	bids: incrementer
+	calls: never
 
-def incrementer(dice_total, my_dice, round_log):
+	prints out the input parameters
+	"""
+	if len(round_log["player"]) == 0: # it is going first
+		return 1, 2
+
+	print("dice_total:", dice_total)
+	print("my_dice:", my_dice)
+	print("round_log:", round_log)
+	return incrementer(dice_total, my_dice, round_log, *args, **kwargs)
+
+def incrementer(dice_total, my_dice, round_log, *args, **kwargs):
+	"""
+	bids: incrementer
+	calls: never
+	"""
 	if len(round_log["player"]) == 0: # it is going first
 		return 1, 2
 	prev_amount = round_log["amount"][-1]
@@ -18,7 +32,11 @@ def incrementer(dice_total, my_dice, round_log):
 	else:
 		return prev_amount, prev_face+1
 	
-def incrementer2(dice_total, my_dice, round_log):
+def incrementer2(dice_total, my_dice, round_log, *args, **kwargs):
+	"""
+	bids: incrementer
+	calls: if the bid dice is more than the total dice
+	"""
 	if len(round_log["player"]) == 0: # it is going first
 		return 1, 2
 	prev_amount = round_log["amount"][-1]
@@ -30,7 +48,13 @@ def incrementer2(dice_total, my_dice, round_log):
 	else:
 		return prev_amount, prev_face+1
 
-def ExpectedPlayer(dice_total, my_dice, round_log):
+def ExpectedPlayer(dice_total, my_dice, round_log, *args, **kwargs):
+	"""
+	bids: expected amount using its dice
+	calls: if bid is above expected
+	
+	expected: int divide by 3 (divide then floor)
+	"""
 
 	n_my_dice = np.sum(my_dice)
 	dice_count_not_mine = dice_total - n_my_dice
@@ -58,7 +82,13 @@ def ExpectedPlayer(dice_total, my_dice, round_log):
 		# i am not 100% sure if it is even possible to get here
 		return incrementer(dice_total, my_dice, round_log)
 	
-def ExpectedPlayer2(dice_total, my_dice, round_log):
+def ExpectedPlayer2(dice_total, my_dice, round_log, *args, **kwargs):
+	"""
+	bids: expected amount using its dice
+	calls: if bid is above expected
+	
+	expected: divide by 3 then round
+	"""
 
 	n_my_dice = np.sum(my_dice)
 	dice_count_not_mine = dice_total - n_my_dice
@@ -85,3 +115,33 @@ def ExpectedPlayer2(dice_total, my_dice, round_log):
 	else: # if it is not a valid bid, just increment it
 		# i am not 100% sure if it is even possible to get here
 		return incrementer(dice_total, my_dice, round_log)
+
+def inc_binom_caller(dice_total, my_dice, round_log, *args, **kwargs):
+	"""
+	bids: incrementer
+	calling: uses a binomial distribution to determine if the bid is likely correct or not
+	 - required_prob
+	"""
+	required_prob = 0.5
+
+	if len(round_log["player"]) == 0: # it is going first
+		return 1, 2
+	
+	n_my_dice = np.sum(my_dice[:])
+	dice_count_not_mine = dice_total - n_my_dice
+
+	my_dice_effective = effective_dice(my_dice)
+	
+	prev_amount = round_log["amount"][-1]
+	prev_face = round_log["face"][-1]
+
+	my_binom = binom(dice_count_not_mine, 2/3)
+	required_amount = prev_amount - my_dice_effective[prev_face-1]
+	bin_prob = my_binom.cdf(dice_count_not_mine - required_amount)
+	if kwargs.get("verbose"):
+		print(f"not_mine: {dice_count_not_mine}, required_amount: {required_amount}, bin_prob: {round(bin_prob,3)}")
+		# print(f"dice_total: {dice_total}, n_my_dice: {n_my_dice}")
+		# print(f"my_dice: {my_dice}")
+	if bin_prob < required_prob:
+		return 0, 0
+	return incrementer(dice_total, my_dice, round_log)
