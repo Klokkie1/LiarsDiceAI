@@ -124,25 +124,7 @@ def inc_binom_caller(dice_total, my_dice, round_log, *args, **kwargs):
 	"""
 	required_prob = 0.5
 
-	if len(round_log["player"]) == 0: # it is going first
-		return 1, 2
-	
-	n_my_dice = np.sum(my_dice[:])
-	dice_count_not_mine = dice_total - n_my_dice
-
-	my_dice_effective = effective_dice(my_dice)
-	
-	prev_amount = round_log["amount"][-1]
-	prev_face = round_log["face"][-1]
-
-	my_binom = binom(dice_count_not_mine, 2/3)
-	required_amount = prev_amount - my_dice_effective[prev_face-1]
-	bin_prob = my_binom.cdf(dice_count_not_mine - required_amount)
-	if kwargs.get("verbose"):
-		print(f"not_mine: {dice_count_not_mine}, required_amount: {required_amount}, bin_prob: {round(bin_prob,3)}")
-		# print(f"dice_total: {dice_total}, n_my_dice: {n_my_dice}")
-		# print(f"my_dice: {my_dice}")
-	if bin_prob < required_prob:
+	if statistical_call(dice_total, my_dice, round_log, required_prob, kwargs.get("verbose")):
 		return 0, 0
 	return incrementer(dice_total, my_dice, round_log)
 
@@ -156,31 +138,22 @@ def binom_player(dice_total, my_dice, round_log, *args, **kwargs):
 	required_prob = 0.5
 	bid_prob = 0.5
 
+	if statistical_call(dice_total, my_dice, round_log, required_prob, kwargs.get("verbose")):
+		return 0, 0
+	
+	n_my_dice = np.sum(my_dice[:])
+	dice_count_not_mine = dice_total - n_my_dice
+
 	if len(round_log["player"]) == 0: # it is going first
 		stat_amount = get_statistical_amount(dice_count_not_mine, bid_prob)
 
 		amount, face = get_largest_highest_face(my_dice)
 		return amount + stat_amount, face
-
-	n_my_dice = np.sum(my_dice[:])
-	dice_count_not_mine = dice_total - n_my_dice
-
-	my_dice_effective = effective_dice(my_dice)
 	
+
 	prev_amount = round_log["amount"][-1]
 	prev_face = round_log["face"][-1]
 
-	my_binom = binom(dice_count_not_mine, 2/3)
-	required_amount = prev_amount - my_dice_effective[prev_face-1]
-	bin_prob = my_binom.cdf(dice_count_not_mine - required_amount)
-	if kwargs.get("verbose"):
-		print(f"not_mine: {dice_count_not_mine}, required_amount: {required_amount}, bin_prob: {round(bin_prob,3)}")
-		# print(f"dice_total: {dice_total}, n_my_dice: {n_my_dice}")
-		# print(f"my_dice: {my_dice}")
-	if bin_prob < required_prob:
-		return 0, 0
-	
-	# bidding
 	stat_amount = get_statistical_amount(dice_count_not_mine, bid_prob)
 
 	amount, face = get_largest_highest_face(my_dice)
