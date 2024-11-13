@@ -10,12 +10,15 @@ def printer(dice_total, my_dice, round_log, *args, **kwargs):
 
 	prints out the input parameters
 	"""
-	if len(round_log["player"]) == 0: # it is going first
-		return 1, 2
 
 	print("dice_total:", dice_total)
 	print("my_dice:", my_dice)
 	print("round_log:", round_log)
+	print("kwargs:", kwargs)
+
+	if len(round_log["player"]) == 0: # it is going first
+		return 1, 2
+	
 	return incrementer(dice_total, my_dice, round_log, *args, **kwargs)
 
 def incrementer(dice_total, my_dice, round_log, *args, **kwargs):
