@@ -40,7 +40,7 @@ def get_statistical_amount(dice, chance):
 	"""
 	my_binom = binom(dice, 2/3)
 	for i in range(dice, 0, -1):
-		if my_binom.cdf(dice-i) > (chance):
+		if my_binom.cdf(dice-i) >= (chance):
 			return i
 	return 0
 		
@@ -71,6 +71,6 @@ def statistical_call(dice_total, my_dice, round_log, required_prob, verbose=Fals
 		print(f"not_mine: {dice_count_not_mine}, required_amount: {required_amount}, bin_prob: {round(bin_prob,3)}")
 		# print(f"dice_total: {dice_total}, n_my_dice: {n_my_dice}")
 		# print(f"my_dice: {my_dice}")
-	if bin_prob < required_prob:
+	if bin_prob <= required_prob:
 		return True
 	return False
